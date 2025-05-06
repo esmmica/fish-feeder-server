@@ -1,23 +1,39 @@
 const express = require('express');
-const cors = require('cors');
-
 const app = express();
-app.use(cors());
-app.use(express.text());
+const port = process.env.PORT || 3000;
 
-let lastCommand = 'S'; // Default to Stop
+app.use(express.json());
 
-app.post('/control', (req, res) => {
-  lastCommand = req.body;
-  console.log('Received command:', lastCommand);
-  res.send('Command received');
+// Temporary storage
+let latestSensorData = {};
+let latestCommand = null;
+
+// ESP32 -> Render: send sensor data
+app.post('/sensor_data', (req, res) => {
+  latestSensorData = req.body;
+  console.log('Sensor data received:', latestSensorData);
+  res.status(200).json({ message: 'Sensor data stored' });
 });
 
-app.get('/command', (req, res) => {
-  res.send(lastCommand);
+// Flutter -> Render: get sensor data
+app.get('/get_sensor_data', (req, res) => {
+  res.json(latestSensorData);
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Flutter -> Render: send command
+app.post('/send_command', (req, res) => {
+  latestCommand = req.body;
+  console.log('Command received from Flutter:', latestCommand);
+  res.status(200).json({ message: 'Command stored' });
+});
+
+// ESP32 -> Render: get latest command
+app.get('/get_command', (req, res) => {
+  res.json(latestCommand || {});
+  latestCommand = null; // Clear command after ESP32 receives it
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Cloud server running on port ${port}`);
 });
