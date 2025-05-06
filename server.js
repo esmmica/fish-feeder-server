@@ -36,7 +36,10 @@ app.get('/get_command', (req, res) => {
 
 // Camera stream proxy endpoint
 app.get('/camera_stream', (req, res) => {
-  const streamUrl = 'http://192.168.100.122:81/stream'; // Your ESP32-CAM IP
+  // Assuming the ESP32 is set to stream via a local URL (you can update this URL dynamically based on your setup)
+  const streamUrl = 'http://esp32-cam.local:81/stream';  // Adjust the stream URL to match your ESP32-CAM's URL
+
+  // Forward the request to the ESP32-CAM stream
   req.pipe(request(streamUrl)).pipe(res);
 });
 
