@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
+const request = require('request');
 
 app.use(express.json());
 
@@ -31,6 +32,12 @@ app.post('/send_command', (req, res) => {
 app.get('/get_command', (req, res) => {
   res.json(latestCommand || {});
   latestCommand = null; // Clear command after ESP32 receives it
+});
+
+// Camera stream proxy endpoint
+app.get('/camera_stream', (req, res) => {
+  const streamUrl = 'http://192.168.100.122:81/stream'; // Your ESP32-CAM IP
+  req.pipe(request(streamUrl)).pipe(res);
 });
 
 // Start server
